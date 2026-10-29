@@ -1,0 +1,20 @@
+{
+  "name": "video-analysis",
+  "version": "0.1.0",
+  "description": "Analyze videos with Gemini: diarized transcript, factual claims, and frame-accurate visuals tied to each claim.",
+  "author": {
+    "name": "clipwitness contributors"
+  },
+  "license": "MIT",
+  "keywords": ["video", "gemini", "transcript", "fact-check"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Video Analysis",
+    "shortDescription": "Analyze videos for fact-checking",
+    "longDescription": "Use Gemini video understanding to produce a diarized transcript, the factual claims made (spoken or on screen), and the charts and graphics tied to each claim with frame-accurate timecodes.",
+    "developerName": "clipwitness contributors",
+    "category": "Productivity",
+    "capabilities": ["Instructions"],
+    "defaultPrompt": ["Analyze this video for fact-checking: video.mp4"]
+  }
+}

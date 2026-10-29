@@ -1,0 +1,10 @@
+{
+  "name": "video-analysis",
+  "version": "0.1.0",
+  "description": "Analyze videos with Gemini: diarized transcript, factual claims, and frame-accurate visuals tied to each claim.",
+  "author": {
+    "name": "clipwitness contributors"
+  },
+  "license": "MIT",
+  "keywords": ["video", "gemini", "transcript", "fact-check"]
+}

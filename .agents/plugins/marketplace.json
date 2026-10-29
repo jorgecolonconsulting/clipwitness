@@ -1,0 +1,20 @@
+{
+  "name": "clipwitness",
+  "interface": {
+    "displayName": "ClipWitness"
+  },
+  "plugins": [
+    {
+      "name": "video-analysis",
+      "source": {
+        "source": "local",
+        "path": "./plugins/video-analysis"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "clipwitness",
+  "description": "Video analysis skills for Claude Code.",
+  "owner": {
+    "name": "clipwitness contributors"
+  },
+  "plugins": [
+    {
+      "name": "video-analysis",
+      "description": "Analyze a video with Gemini: diarized transcript, factual claims, and frame-accurate visuals.",
+      "source": "./plugins/video-analysis",
+      "category": "productivity"
+    }
+  ]
+}
