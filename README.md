@@ -1,53 +1,72 @@
 # ClipWitness
 
-A plugin marketplace for Claude Code and Codex with one plugin, **video-analysis**. Its `analyze-video` skill
-uses Gemini video understanding to watch a video and produce:
+**Point Claude Code or Codex at a video. Get back every factual claim it makes, and the exact frame where each
+chart or graphic backs it up.**
 
-- a diarized, timestamped transcript (`transcript.srt`),
-- the factual claims made, spoken or shown on screen, quoted verbatim,
-- the charts, graphics and animations tied to each claim, with frame-accurate onset timecodes and a still of each.
+> Analyze ~/Movies/explainer.mp4 for fact-checking.
 
-It records what the video says and shows; it does not judge whether claims are true. Feed its output to a
-fact-checker.
+You get:
+
+| Output | What's in it |
+|---|---|
+| `transcript.srt` | Who said what, when |
+| Claims | Every checkable statement, spoken or on screen, quoted word for word |
+| Visuals | Each chart, map or animation tied to a claim, with a frame-accurate timecode and a still |
+| `report.html` | All of the above as one browsable page (optional) |
+
+It records what a video says and shows. It doesn't decide what's true: hand its output to a fact-checker.
+
+Powered by Gemini video understanding. Packaged as a plugin (`video-analysis`) for Claude Code and Codex.
 
 ## What you get
 
-A `deep` analysis of a 36-second explainer on aquifers, rendered from its `analysis.json`. Each claim is quoted
-verbatim and comes with the visuals that show it. Each visual has a timecode snapped to the exact frame by
-ffmpeg (Gemini's own estimate is shown beside it), a still with the element boxed, and its on-screen text:
+**Example input:** a 36-second educational video explaining aquifers. Any local video or YouTube URL works.
 
-![Deep analysis report: summary, stats, and the first claim with its visuals](docs/images/deep-analysis-overview.png)
+### 1. Claims, each with the visuals that show it
 
-`deep` and `lite` read the same claim differently. Deep lists the well, the pump house and each usage icon as
-separate elements with their own onsets. Lite lumps them into one entry:
+![Report for the aquifers example: summary, stats, and the first claim with its visuals](docs/images/deep-analysis-overview.png)
 
-![The same claim analyzed by Deep (five separate visuals, each with its own timecode) and Lite (one lumped entry)](docs/images/granular-vs-lumped.png)
+- Each claim is quoted word for word.
+- Each visual gets a timecode snapped to the exact frame (green `ffmpeg` badge), with Gemini's own guess beside it.
+- Each visual has a still with the element boxed, plus any on-screen text.
 
-What the extra cost buys: cost per minute of video against visual elements timed correctly, three runs of each
-depth on the same clip:
+### 2. Two depths: `deep` and `lite`
+
+![The same claim from the aquifers example: Deep finds five separate visuals with their own timecodes, Lite lumps them into one](docs/images/granular-vs-lumped.png)
+
+| | `lite` (default) | `deep` |
+|---|---|---|
+| Cost | ~$0.04 per minute of video | ~$0.21 per minute of video |
+| Visuals | Groups elements together | Separates every element, each with its own timecode |
+| Best for | Claims and on-screen text | Checking the visuals too |
+
+### 3. What `deep` buys you
 
 ![Cost per minute of video vs. visual elements timed correctly, for Deep, Lite and Lite minimal](docs/images/cost-vs-accuracy.png)
 
+Three runs of each depth on the aquifers example.
+
 ## Requirements (macOS)
 
-- Python 3.10 or newer on `PATH` (`brew install python@3.13`). The system `python3` (3.9) can start the
-  skill, but the skill needs a newer Python to build its environment.
-- `ffmpeg` (`brew install ffmpeg`), which pins each visual to its exact frame. Without it, timecodes stay
+- **Python 3.10+** on `PATH`: `brew install python@3.13`
+- **ffmpeg**, which snaps each visual to its exact frame: `brew install ffmpeg`. Without it, timecodes are
   Gemini's estimates.
-- A Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey), exported in the shell that
+- **A Gemini API key** from [Google AI Studio](https://aistudio.google.com/apikey), exported in the shell that
   starts Claude Code or Codex:
 
   ```bash
   echo 'export GEMINI_API_KEY="your-key"' >> ~/.zshrc
   ```
 
-  Free-tier keys work for local video files. YouTube URLs need a key from a paid-tier (billing-enabled) project.
+  Free-tier keys work for local videos. YouTube URLs need a paid-tier key.
 
-There is no separate setup step. On first use the skill creates a Python environment in
-`~/.cache/video-analysis/venv-<hash>` and installs its pinned dependencies (about 20 seconds, needs network access
-to PyPI). Claude Code and Codex share it. A plugin update with new dependencies builds a new `venv-<hash>` beside
-the old one, so an analysis running in the other host keeps working. Delete old `venv-*` folders when you like
-(about 90 MB each). Set `VIDEO_ANALYSIS_HOME` to keep them somewhere else.
+No setup step. On first use the skill installs its own dependencies:
+
+- **Where:** `~/.cache/video-analysis/venv-<hash>`, shared by Claude Code and Codex. Set `VIDEO_ANALYSIS_HOME`
+  to move it.
+- **How long:** about 20 seconds, once. Needs network access to PyPI.
+- **Updates:** a plugin update with new dependencies builds a new `venv-<hash>` beside the old one. Delete old
+  `venv-*` folders whenever you like (about 90 MB each).
 
 ## Install in Claude Code
 
@@ -72,9 +91,11 @@ Or, inside a session: `/plugin marketplace add jorgecolonconsulting/clipwitness`
 3. Find **video-analysis** in the plugin list and click **+** to install it.
 4. Use it from the **Code** tab: start a new session, or run `/reload-plugins` in an open one.
 
-The desktop app adds marketplaces only from a Git repository, not from a local folder. For a local clone, use
-the CLI commands above. The skill runs Python, ffmpeg and your API key on your Mac, so it only works in Claude
-Code (CLI or the desktop Code tab), not in Chat or Cowork.
+Notes:
+
+- The desktop app adds marketplaces only from a Git repository. For a local clone, use the CLI.
+- Works in Claude Code (CLI or the desktop Code tab) only, not in Chat or Cowork: it runs Python, ffmpeg and
+  your API key on your Mac.
 
 ## Install in Codex
 
@@ -98,49 +119,57 @@ open **video-analysis**, and click the **+** (install) button. Start a new threa
 
 ### What Codex needs that Claude Code doesn't
 
-No config changes. Codex runs shell commands in a sandbox with no network and no write access outside your
-workspace, and the skill needs both: Google for every analysis, PyPI and `~/.cache/video-analysis` on first run.
-So the skill asks Codex to run it outside the sandbox, and Codex asks you to approve. Approve it, or choose to
-always allow that command so later runs don't ask.
+No config changes, but expect an approval prompt:
 
-Codex's automatic approval reviewer (`approvals_reviewer`), if you use it, may refuse the request because it
-uploads a local video to an external service. Say in your prompt that uploading the video to Gemini is OK.
-
-Codex runs commands in a snapshot of your interactive shell, so the key your `~/.zshrc` exports is the one the
-skill uses, even if you started Codex with a different one. Keep a single `GEMINI_API_KEY` in `~/.zshrc`. A
-mismatch shows up as `Gemini interaction failed (INTERNAL ...)` on every run in Codex only, and `cleanup` then
-reports `failed` because the files belong to the other key's project.
+- **Approve running outside the sandbox.** Codex's sandbox blocks the network and writes outside your
+  workspace. The skill needs both (Gemini every run; PyPI and `~/.cache/video-analysis` on first run), so it
+  asks. Choose "always allow" to stop future prompts.
+- **Using the automatic approval reviewer (`approvals_reviewer`)?** It may refuse because the video is
+  uploaded to Google. Say in your prompt that uploading the video to Gemini is OK.
+- **Keep one `GEMINI_API_KEY`, in `~/.zshrc`.** Codex runs commands in a snapshot of your interactive shell, so
+  that key wins. A mismatch shows up as `Gemini interaction failed (INTERNAL ...)` in Codex only.
 
 ## Use it
 
-Ask in plain language. The agent picks the skill, tells you which depth it will run, and reports the claims with
-their visuals and timecodes:
+Ask in plain language:
 
-> Analyze ~/Movies/aquifers.mp4 for fact-checking.
+> Analyze ~/Movies/explainer.mp4 for fact-checking.
 
-To name the skill explicitly, use `/video-analysis:analyze-video` in Claude Code. In Codex, type `@` and pick the plugin or its skill.
+- The agent picks the skill, says which depth it will run, and reports claims with their visuals and timecodes.
+- It runs `lite` unless you agree to `deep` (about 5x the cost; see [the comparison](#2-two-depths-deep-and-lite)).
+- Want a browsable page? Ask for the HTML report.
+- To call the skill by name: `/video-analysis:analyze-video` in Claude Code; in Codex, type `@` and pick it.
 
-Depths: `lite` (default, about $0.039 per minute of video on a paid key; a 36-second clip takes about 1 minute) is
-good for claims and on-screen text. `deep` (about $0.21 per minute) costs about 5x more and finds more visuals
-with better timecodes. The agent asks before running `deep`.
+### Run the script yourself
 
-You can also run the script yourself from a clone of this repository:
+From a clone of this repository:
 
 ```bash
 python3 plugins/video-analysis/skills/analyze-video/scripts/analyze_video.py \
-  --session-root ~/video-sessions analyze ~/Movies/aquifers.mp4 --session aquifers-v1
+  --session-root ~/video-sessions analyze ~/Movies/explainer.mp4 --session explainer-v1
 ```
 
-The command prints the path of `analysis.md`. Beside it are `analysis.json`, `transcript.srt` and
-`frames/visual-NNN.png`. Follow-ups reuse the session: `refine --session aquifers-v1 --prompt '...'`, `resume`
-(collect a timed-out analysis without paying again), `status`, and `cleanup` (delete the copies uploaded to Google).
+It prints the path of `analysis.md`. Beside it: `analysis.json`, `transcript.srt`, `frames/visual-NNN.png`.
 
-For a page you can browse (claims with their boxed stills and timecodes, the transcript, the uncertainties),
-ask for the HTML report, or run `python3 plugins/video-analysis/skills/analyze-video/scripts/report_html.py <revision-dir> --serve` and open the link it prints.
-The page is generated from `analysis.json` by code, so it looks the same every run.
+Follow-up commands reuse the session:
 
-Local videos are uploaded to Google's Files API (deleted after 48 hours, or by `cleanup`). Gemini's output is
-evidence to check, not ground truth.
+| Command | Does |
+|---|---|
+| `refine --session explainer-v1 --prompt '...'` | Re-inspects the video and publishes a new revision |
+| `resume` | Collects a timed-out analysis without paying again |
+| `status` | Shows the session |
+| `cleanup` | Deletes the copies uploaded to Google |
+
+HTML report, same layout every run (generated by code from `analysis.json`):
+
+```bash
+python3 plugins/video-analysis/skills/analyze-video/scripts/report_html.py <revision-dir> --serve
+```
+
+Privacy and trust:
+
+- Local videos are uploaded to Google's Files API and deleted after 48 hours, or sooner by `cleanup`.
+- Gemini's output is evidence to check, not ground truth.
 
 ## Troubleshooting
 
