@@ -181,21 +181,6 @@ Privacy and trust:
 - `nodename nor servname provided`: no network, same cause in Codex.
 - `needs Python 3.10 or newer`: `brew install python@3.13`.
 
-## Layout
-
-```
-.claude-plugin/marketplace.json    Claude Code marketplace
-.agents/plugins/marketplace.json   Codex marketplace
-plugins/video-analysis/
-  .claude-plugin/plugin.json       Claude Code manifest
-  .codex-plugin/plugin.json        Codex manifest
-  requirements.lock                pinned runtime dependencies
-  shared-video/                    Gemini client, sessions, environment bootstrap
-  skills/analyze-video/            SKILL.md and its scripts
-tests/                             pytest suite (no network, no API key)
-docs/images/                       README screenshots
-```
-
 ## Development
 
 ```bash
